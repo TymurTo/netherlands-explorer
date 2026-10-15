@@ -1,0 +1,79 @@
+:root {
+  --button-surface: #fafafa;
+  --button-text: #667085;
+  --button-border: #d9dee5;
+  --button-selected: #eef2f6;
+}
+:is(.fullscreen-atlas, .loading) button.shine-button {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  background: var(--button-surface);
+  color: var(--button-text);
+  border: 1px solid var(--button-border);
+  border-bottom-width: 4px;
+  border-radius: 6px;
+  padding: 8px 16px;
+  font-weight: 500;
+  box-shadow: 0 3px 10px rgb(31 41 55 / 6%);
+  transition:
+    filter 300ms ease,
+    border-width 300ms ease,
+    opacity 300ms ease,
+    background-color 300ms ease;
+}
+:is(.fullscreen-atlas, .loading) button.shine-button::before {
+  content: '';
+  position: absolute;
+  top: -150%;
+  left: 0;
+  width: 20rem;
+  min-width: 100%;
+  height: 5px;
+  border-radius: 6px;
+  background: #fff;
+  opacity: 0.5;
+  box-shadow: 0 0 10px 10px rgb(0 0 0 / 30%);
+  pointer-events: none;
+  transition: top 500ms ease;
+}
+:is(.fullscreen-atlas, .loading) button.shine-button:not(:disabled):is(:hover, :focus-visible) {
+  filter: brightness(1.15);
+  border-top-width: 4px;
+  border-bottom-width: 1px;
+}
+
+:is(.fullscreen-atlas, .loading)
+  button.shine-button:not(:disabled):is(:hover, :focus-visible)::before {
+  top: 150%;
+}
+
+:is(.fullscreen-atlas, .loading) button.shine-button:not(:disabled):active {
+  opacity: 0.75;
+}
+.fullscreen-atlas button.shine-button:is(.active, .saved, [aria-pressed='true']) {
+  background: var(--button-selected) !important;
+  color: #374151 !important;
+  border-color: #9ba7b5;
+}
+
+.fullscreen-atlas button.shine-button:is(.icon, .clear, .star),
+.fullscreen-atlas .floating-notice button.shine-button {
+  padding: 8px 12px;
+}
+:is(.fullscreen-atlas, .loading) button:focus-visible {
+  outline: 3px solid #8a6b37;
+  outline-offset: 4px;
+}
+
+@media (max-width: 760px) {
+  .fullscreen-atlas .floating-actions button.shine-button,
+  .fullscreen-atlas .map-navigation button.shine-button {
+    padding: 8px 12px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  :is(.fullscreen-atlas, .loading) button::before {
+    display: none;
+  }
+}
