@@ -226,7 +226,7 @@ All settings have working defaults for local development. Override them with env
 | GET    | `/api/favorites`                 | yes  | List favorite attraction ids      |
 | PUT    | `/api/favorites/{attraction_id}` | yes  | Add a favorite                    |
 | DELETE | `/api/favorites/{attraction_id}` | yes  | Remove a favorite                 |
-| GET    | `/api/attractions/{id}/comments` | no   | Comments, newest first, paginated |
+| GET    | `/api/attractions/{id}/comments` | no   | Comments, newest first, cursor-paginated |
 | POST   | `/api/attractions/{id}/comments` | yes  | Add a comment                     |
 | DELETE | `/api/comments/{comment_id}`     | yes  | Delete your own comment           |
 
@@ -247,5 +247,4 @@ Interactive API documentation is available at **http://127.0.0.1:8000/docs** whi
 
 - Attraction photos are placeholders.
 - Behind a reverse proxy, set `FORWARDED_ALLOW_IPS` to the proxy address. Otherwise the rate limiter sees every request as coming from the proxy.
-- Comment pagination uses offsets, which can shift if new comments arrive while browsing.
 - Planned: real attraction photos and a deployed demo.

@@ -4,7 +4,6 @@ from ..config import ALLOWED_ORIGINS
 
 
 async def protect_writes(request: Request, call_next):
-
     if request.url.path.startswith("/api/") and request.method in {
         "POST",
         "PUT",

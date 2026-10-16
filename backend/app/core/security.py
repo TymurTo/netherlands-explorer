@@ -9,7 +9,6 @@ from .database import database
 
 
 def hash_password(password: str, salt: str | None = None) -> str:
-
     salt = salt or secrets.token_hex(16)
     digest = hashlib.scrypt(password.encode(), salt=bytes.fromhex(salt), n=16384, r=8, p=1).hex()
     return f"{salt}:{digest}"
@@ -34,7 +33,6 @@ def get_current_user(request: Request):
 
 
 def limit_auth_attempts(request: Request) -> None:
-
     ip = request.client.host if request.client else "unknown"
     now = time.time()
     with database() as db:

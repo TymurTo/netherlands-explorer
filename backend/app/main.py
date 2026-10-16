@@ -11,7 +11,6 @@ from .routes import auth, catalog, comments, favorites
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-
     initialize_database()
     yield
 
