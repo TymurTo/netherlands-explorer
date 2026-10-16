@@ -1,6 +1,5 @@
 # Netherlands Explorer
 
-
 An interactive travel atlas for exploring the Netherlands.
 
 Discover 12 provinces, 40 cities and 40 attractions through a fullscreen map, searchable directories and sliding panels.
@@ -39,7 +38,20 @@ The map is schematic, and city positions are approximate. Attraction images curr
 
 ### Run the application
 
-The frontend is not committed to the repository, so build it once before the first start.
+The frontend is not committed to the repository, so build it once before the first start. Run all commands from the project root unless stated otherwise.
+
+**Python 3.11 or newer is required.** Check your version first:
+
+```bash
+python3 --version
+```
+
+If it prints 3.10 or lower (the system Python on macOS is 3.9), install a newer Python:
+
+- macOS: download the installer from [python.org/downloads](https://www.python.org/downloads/), or run `brew install python@3.12`
+- Windows: install from [python.org/downloads](https://www.python.org/downloads/) and tick "Add Python to PATH"
+
+Then follow these steps:
 
 ```bash
 # 1. Clone the repository
@@ -53,20 +65,33 @@ npm run build
 cd ..
 
 # 3. Create and activate a virtual environment
-python -m venv .venv
+python3.12 -m venv .venv           # macOS / Linux (use the version you installed)
 source .venv/bin/activate          # macOS / Linux
+# py -3.12 -m venv .venv           # Windows (PowerShell)
 # .venv\Scripts\Activate.ps1       # Windows (PowerShell)
 
-# 4. Install backend dependencies
+# 4. Check that the environment uses the right Python
+python --version                   # must print 3.11 or newer
+
+# 5. Install backend dependencies
 pip install -r backend/requirements.txt
 
-# 5. Start the server
+# 6. Start the server
 python backend/run.py
 ```
 
 Open **http://127.0.0.1:8000** in your browser. Press `Ctrl+C` to stop the server.
 
 The SQLite database (`backend/atlas.sqlite3`) is created automatically on the first start.
+
+#### Troubleshooting
+
+| Problem | Fix |
+| --- | --- |
+| `No matching distribution found for fastapi` | The environment was created with an old Python. Run `deactivate`, `rm -rf .venv`, then recreate it with Python 3.11 or newer. |
+| `No such file or directory: backend/requirements.txt` or `.venv/bin/activate` | You are not in the project root. Run `cd` to the `netherlands-explorer` folder. |
+| `Frontend build missing` | Run `cd frontend && npm install && npm run build`, then start the server again. |
+| `command not found: python3.12` | That version is not installed. Install it, open a new terminal window, and try again. |
 
 ### Explore the map
 
