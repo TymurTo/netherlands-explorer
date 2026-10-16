@@ -1,6 +1,5 @@
 # Netherlands Explorer
 
-![CI](https://github.com/TymurTo/netherlands-explorer/actions/workflows/ci.yml/badge.svg)
 
 An interactive travel atlas for exploring the Netherlands.
 
@@ -24,11 +23,11 @@ The map is schematic, and city positions are approximate. Attraction images curr
 
 ## Technology
 
-| Part     | Technologies                                  |
-| -------- | --------------------------------------------- |
-| Frontend | React, React Router, JavaScript, CSS, Vite    |
-| Backend  | Python, FastAPI, Uvicorn                      |
-| Database | SQLite                                        |
+| Part     | Technologies                                   |
+| -------- | ---------------------------------------------- |
+| Frontend | React, React Router, JavaScript, CSS, Vite     |
+| Backend  | Python, FastAPI, Uvicorn                       |
+| Database | SQLite                                         |
 | Tooling  | pytest, httpx, Black, Prettier, GitHub Actions |
 
 ## Quick Start
@@ -36,40 +35,38 @@ The map is schematic, and city positions are approximate. Attraction images curr
 ### Requirements
 
 - Python 3.11 or newer
-- Node.js 22.12 or newer (only needed if you want to rebuild or edit the frontend)
+- Node.js 22.12 or newer
 
 ### Run the application
 
-The repository includes a prebuilt frontend in `frontend/dist`, so you only need Python to start the app.
+The frontend is not committed to the repository, so build it once before the first start.
 
 ```bash
 # 1. Clone the repository
 git clone https://github.com/TymurTo/netherlands-explorer.git
 cd netherlands-explorer
 
-# 2. Create and activate a virtual environment
+# 2. Build the frontend
+cd frontend
+npm install
+npm run build
+cd ..
+
+# 3. Create and activate a virtual environment
 python -m venv .venv
 source .venv/bin/activate          # macOS / Linux
 # .venv\Scripts\Activate.ps1       # Windows (PowerShell)
 
-# 3. Install dependencies
+# 4. Install backend dependencies
 pip install -r backend/requirements.txt
 
-# 4. Start the server
+# 5. Start the server
 python backend/run.py
 ```
 
 Open **http://127.0.0.1:8000** in your browser. Press `Ctrl+C` to stop the server.
 
 The SQLite database (`backend/atlas.sqlite3`) is created automatically on the first start.
-
-If the server reports that the frontend build is missing, build it once:
-
-```bash
-cd frontend
-npm install
-npm run build
-```
 
 ### Explore the map
 
@@ -88,7 +85,7 @@ Sign in using your username and password, not an email address. Visitors can rea
 
 ### Frontend with hot reload
 
-Run the backend and the Vite dev server in two terminals:
+Run the backend and the Vite dev server in two terminals. The backend only needs a built frontend to serve the production app, so for hot reload you can skip the build step.
 
 ```bash
 # Terminal 1: API on http://127.0.0.1:8000
@@ -149,12 +146,12 @@ GitHub Actions runs on every push and pull request:
 
 All settings have working defaults for local development. Override them with environment variables:
 
-| Variable              | Default                                         | Purpose                                                                                         |
-| --------------------- | ----------------------------------------------- | ----------------------------------------------------------------------------------------------- |
-| `DATABASE_PATH`       | `backend/atlas.sqlite3`                         | Location of the SQLite database file                                                            |
-| `COOKIE_SECURE`       | `0`                                             | Set to `1` to mark the session cookie as HTTPS-only                                             |
-| `ALLOWED_ORIGINS`     | `localhost` and `127.0.0.1` on ports 5173, 8000 | Comma-separated list of origins allowed to send write requests                                  |
-| `FORWARDED_ALLOW_IPS` | empty (no proxy trusted)                        | Comma-separated IPs of reverse proxies whose forwarded headers are trusted for the client IP    |
+| Variable              | Default                                         | Purpose                                                                                      |
+| --------------------- | ----------------------------------------------- | -------------------------------------------------------------------------------------------- |
+| `DATABASE_PATH`       | `backend/atlas.sqlite3`                         | Location of the SQLite database file                                                         |
+| `COOKIE_SECURE`       | `0`                                             | Set to `1` to mark the session cookie as HTTPS-only                                          |
+| `ALLOWED_ORIGINS`     | `localhost` and `127.0.0.1` on ports 5173, 8000 | Comma-separated list of origins allowed to send write requests                               |
+| `FORWARDED_ALLOW_IPS` | empty (no proxy trusted)                        | Comma-separated IPs of reverse proxies whose forwarded headers are trusted for the client IP |
 
 ## Project structure
 
@@ -185,10 +182,11 @@ All settings have working defaults for local development. Override them with env
 │   │   ├── utils/             # URL routing and search helpers
 │   │   ├── data/map.json      # SVG paths of the provinces
 │   │   └── styles/
-│   ├── tests/                 # frontend tests (node:test)
-│   └── dist/                  # production build served by FastAPI
+│   └── tests/                 # frontend tests (node:test)
 └── scripts/                   # trace_map.py (map image to SVG paths) and its requirements
 ```
+
+`frontend/dist/` is generated by `npm run build` and is not committed. FastAPI serves it in production.
 
 ## API overview
 
