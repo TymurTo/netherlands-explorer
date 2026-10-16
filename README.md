@@ -1,11 +1,12 @@
 # Netherlands Explorer
 
+![CI](https://github.com/TymurTo/netherlands-explorer/actions/workflows/ci.yml/badge.svg)
+
 An interactive travel atlas for exploring the Netherlands.
 
 Discover 12 provinces, 40 cities and 40 attractions through a fullscreen map, searchable directories and sliding panels.
 
-
-[Netherlands Explorer](docs/screenshot.png)
+![Netherlands Explorer](docs/screenshot.png)
 
 ## Features
 
@@ -13,6 +14,7 @@ Discover 12 provinces, 40 cities and 40 attractions through a fullscreen map, se
 - Search by English and local place names.
 - Descriptions and history of provinces and cities.
 - Attraction details with links to official websites.
+- Shareable URLs: the selected province, city and panel are reflected in the address bar.
 - User registration and sign-in.
 - Personal favorites.
 - Public comments with the option to delete your own.
@@ -22,12 +24,12 @@ The map is schematic, and city positions are approximate. Attraction images curr
 
 ## Technology
 
-| Part     | Technologies                        |
-| -------- | ----------------------------------- |
-| Frontend | React, JavaScript, CSS, Vite        |
-| Backend  | Python, FastAPI, Uvicorn            |
-| Database | SQLite                              |
-| Tooling  | pytest, httpx, Black, Prettier      |
+| Part     | Technologies                                  |
+| -------- | --------------------------------------------- |
+| Frontend | React, React Router, JavaScript, CSS, Vite    |
+| Backend  | Python, FastAPI, Uvicorn                      |
+| Database | SQLite                                        |
+| Tooling  | pytest, httpx, Black, Prettier, GitHub Actions |
 
 ## Quick Start
 
@@ -54,12 +56,20 @@ source .venv/bin/activate          # macOS / Linux
 pip install -r backend/requirements.txt
 
 # 4. Start the server
-python main.py
+python backend/run.py
 ```
 
 Open **http://127.0.0.1:8000** in your browser. Press `Ctrl+C` to stop the server.
 
 The SQLite database (`backend/atlas.sqlite3`) is created automatically on the first start.
+
+If the server reports that the frontend build is missing, build it once:
+
+```bash
+cd frontend
+npm install
+npm run build
+```
 
 ### Explore the map
 
@@ -82,7 +92,7 @@ Run the backend and the Vite dev server in two terminals:
 
 ```bash
 # Terminal 1: API on http://127.0.0.1:8000
-python main.py
+python backend/run.py
 
 # Terminal 2: frontend on http://localhost:5173
 cd frontend
@@ -101,70 +111,101 @@ npm run build
 
 ### Tests
 
+Backend (pytest):
+
 ```bash
+cd backend
 pip install -r requirements-dev.txt
 pytest
 ```
 
-The tests cover the full user flow (registration, sessions, favorites, comments), data isolation between users, input validation, CSRF protection, the login rate limit and the consistency of the catalog data. Each test uses a temporary database, so your local data is never touched.
+The backend tests cover the full user flow (registration, sessions, favorites, comments), data isolation between users, input validation, CSRF protection, the login rate limit and the consistency of the catalog data. Each test uses a temporary database, so your local data is never touched.
+
+Frontend (Node test runner):
+
+```bash
+cd frontend
+npm install
+npm test
+```
+
+The frontend tests cover URL routing helpers, form validation and the rendered application.
 
 ### Code style
 
 ```bash
-black .                      # Python
-cd frontend && npm run format   # JavaScript, JSX, CSS
+cd backend && black .              # Python
+cd frontend && npm run format      # JavaScript, JSX, CSS
 ```
+
+### Continuous integration
+
+GitHub Actions runs on every push and pull request:
+
+- **backend:** `black --check` and `pytest`
+- **frontend:** `prettier --check`, `npm test` and `npm run build`
 
 ### Configuration
 
 All settings have working defaults for local development. Override them with environment variables:
 
-| Variable          | Default                                        | Purpose                                            |
-| ----------------- | ---------------------------------------------- | -------------------------------------------------- |
-| `DATABASE_PATH`   | `backend/atlas.sqlite3`                        | Location of the SQLite database file               |
-| `COOKIE_SECURE`   | `0`                                            | Set to `1` to mark the session cookie as HTTPS-only |
-| `ALLOWED_ORIGINS` | `localhost` and `127.0.0.1` on ports 5173, 8000 | Comma-separated list of origins allowed to send writes |
+| Variable              | Default                                         | Purpose                                                                                         |
+| --------------------- | ----------------------------------------------- | ----------------------------------------------------------------------------------------------- |
+| `DATABASE_PATH`       | `backend/atlas.sqlite3`                         | Location of the SQLite database file                                                            |
+| `COOKIE_SECURE`       | `0`                                             | Set to `1` to mark the session cookie as HTTPS-only                                             |
+| `ALLOWED_ORIGINS`     | `localhost` and `127.0.0.1` on ports 5173, 8000 | Comma-separated list of origins allowed to send write requests                                  |
+| `FORWARDED_ALLOW_IPS` | empty (no proxy trusted)                        | Comma-separated IPs of reverse proxies whose forwarded headers are trusted for the client IP    |
 
 ## Project structure
 
 ```
 .
-├── main.py                  # entry point: starts Uvicorn
+├── .github/workflows/ci.yml   # CI: backend and frontend checks
+├── docs/screenshot.png
 ├── backend/
-│   ├── main.py              # FastAPI app and middleware setup
-│   ├── routes/              # auth, catalog, comments, favorites
-│   ├── schemas.py           # Pydantic request validation
-│   ├── security.py          # password hashing, sessions, rate limiting
-│   ├── middleware.py        # CSRF/origin checks and security headers
-│   ├── database.py          # SQLite connection helper
-│   ├── schema.sql           # database schema
-│   └── catalog.json         # provinces, cities and attractions
+│   ├── run.py                 # entry point: starts Uvicorn
+│   ├── pyproject.toml         # Black and pytest settings
+│   ├── requirements.txt
+│   ├── requirements-dev.txt
+│   ├── app/
+│   │   ├── main.py            # FastAPI app and middleware setup
+│   │   ├── config.py          # paths, cookie, origins, rate limit settings
+│   │   ├── schemas.py         # Pydantic request validation
+│   │   ├── core/              # database, security, middleware, catalog store
+│   │   ├── routes/            # auth, catalog, comments, favorites
+│   │   └── data/              # catalog.json, schema.sql
+│   └── tests/test_api.py      # API tests
 ├── frontend/
-│   └── src/
-│       ├── components/      # map, modal, forms, comments
-│       ├── panels/          # sliding panels (search, places, story)
-│       ├── hooks/useAtlas.js  # application state
-│       └── utils/           # search helpers
-├── scripts/trace_map.py     # converts a map image into SVG paths
-└── tests/test_api.py        # API tests
+│   ├── src/
+│   │   ├── api/               # API client and input validation
+│   │   ├── components/        # map, controls, modal, auth form
+│   │   ├── features/          # screens and sliding panels
+│   │   ├── state/             # React contexts: session, catalog, favorites, navigation, notices
+│   │   ├── hooks/             # custom hooks
+│   │   ├── utils/             # URL routing and search helpers
+│   │   ├── data/map.json      # SVG paths of the provinces
+│   │   └── styles/
+│   ├── tests/                 # frontend tests (node:test)
+│   └── dist/                  # production build served by FastAPI
+└── scripts/                   # trace_map.py (map image to SVG paths) and its requirements
 ```
 
 ## API overview
 
-| Method | Endpoint                                | Auth | Description                          |
-| ------ | --------------------------------------- | ---- | ------------------------------------ |
-| GET    | `/api/health`                           | no   | Health check                         |
-| GET    | `/api/catalog`                          | no   | Provinces, cities and attractions    |
-| POST   | `/api/auth/register`                    | no   | Create an account and sign in        |
-| POST   | `/api/auth/login`                       | no   | Sign in                              |
-| POST   | `/api/auth/logout`                      | yes  | Sign out                             |
-| GET    | `/api/auth/me`                          | yes  | Current user                         |
-| GET    | `/api/favorites`                        | yes  | List favorite attraction ids         |
-| PUT    | `/api/favorites/{attraction_id}`        | yes  | Add a favorite                       |
-| DELETE | `/api/favorites/{attraction_id}`        | yes  | Remove a favorite                    |
-| GET    | `/api/attractions/{id}/comments`        | no   | Comments, newest first, paginated    |
-| POST   | `/api/attractions/{id}/comments`        | yes  | Add a comment                        |
-| DELETE | `/api/comments/{comment_id}`            | yes  | Delete your own comment              |
+| Method | Endpoint                         | Auth | Description                       |
+| ------ | -------------------------------- | ---- | --------------------------------- |
+| GET    | `/api/health`                    | no   | Health check                      |
+| GET    | `/api/catalog`                   | no   | Provinces, cities and attractions |
+| POST   | `/api/auth/register`             | no   | Create an account and sign in     |
+| POST   | `/api/auth/login`                | no   | Sign in                           |
+| POST   | `/api/auth/logout`               | yes  | Sign out                          |
+| GET    | `/api/auth/me`                   | yes  | Current user                      |
+| GET    | `/api/favorites`                 | yes  | List favorite attraction ids      |
+| PUT    | `/api/favorites/{attraction_id}` | yes  | Add a favorite                    |
+| DELETE | `/api/favorites/{attraction_id}` | yes  | Remove a favorite                 |
+| GET    | `/api/attractions/{id}/comments` | no   | Comments, newest first, paginated |
+| POST   | `/api/attractions/{id}/comments` | yes  | Add a comment                     |
+| DELETE | `/api/comments/{comment_id}`     | yes  | Delete your own comment           |
 
 Write requests (`POST`, `PUT`, `DELETE`) must include the `X-Atlas-Request: 1` header. The frontend sends it automatically.
 
@@ -182,7 +223,6 @@ Interactive API documentation is available at **http://127.0.0.1:8000/docs** whi
 ## Limitations and roadmap
 
 - Attraction photos are placeholders.
-- The rate limiter uses the direct client IP, so behind a reverse proxy it needs proxy-aware configuration.
+- Behind a reverse proxy, set `FORWARDED_ALLOW_IPS` to the proxy address. Otherwise the rate limiter sees every request as coming from the proxy.
 - Comment pagination uses offsets, which can shift if new comments arrive while browsing.
-- No frontend tests or CI pipeline yet.
-- Planned: real attraction photos, URL routing for provinces and cities, deployment demo.
+- Planned: real attraction photos and a deployed demo.
